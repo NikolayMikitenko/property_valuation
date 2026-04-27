@@ -1,0 +1,7 @@
+.env
+.vscode
+run_test_*
+result.json
+code_example
+__pycache__
+*.pyc
