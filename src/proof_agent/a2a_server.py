@@ -136,7 +136,7 @@ class ProofAgentExecutor(AgentExecutor):
             graph = await self._get_graph()
 
             try:
-                logger.info("PROOF BEFORE GRAPH task_id=%s url=%s", task_id, url)
+                logger.info("PROOF BEFORE GRAPH task_id=%s url=%s", task_id, url)                               
                 result = await asyncio.wait_for(
                     graph.ainvoke({"url": url}),
                     timeout=240.0,

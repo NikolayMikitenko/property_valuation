@@ -8,6 +8,9 @@ class InputState(TypedDict):
 #     object_name: str
     valuation_description: str
     target_count: int
+    
+    user_id: str
+    session_id: str
 
 
 class AgentState(TypedDict, total=False):
@@ -15,6 +18,9 @@ class AgentState(TypedDict, total=False):
 #     object_name: str
     valuation_description: str
     target_count: int
+
+    user_id: str
+    session_id: str
 
     valuation_id: str
     # candidates_batch: list[dict]

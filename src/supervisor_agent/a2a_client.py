@@ -18,6 +18,7 @@ from a2a.helpers.proto_helpers import (
 )
 from a2a.types import SendMessageRequest
 # from a2a.types import Message, Part, Role, SendMessageRequest
+from langfuse_runtime import observe, propagate_attributes
 
 def _try_get_text(obj: Any) -> str | None:
     if obj is None:
@@ -81,6 +82,7 @@ def _extract_text_from_response(chunk: Any) -> str:
 
     raise RuntimeError(f"Unsupported A2A response type: {type(chunk).__name__}")
 
+@observe(name="a2a-transport-call", as_type="span")
 async def _call_a2a_agent(base_url: str, payload: dict[str, Any], read_timeout: float = 300.0,) -> dict[str, Any]:
     timeout = httpx.Timeout(
         connect=20.0,
@@ -140,13 +142,46 @@ async def _call_a2a_agent(base_url: str, payload: dict[str, Any], read_timeout: 
         await resolver_httpx_client.aclose()
         await transport_httpx_client.aclose()
 
-async def call_researcher(base_url: str, payload: dict[str, Any]) -> dict[str, Any]:
-    return await _call_a2a_agent(base_url, payload, read_timeout=600.0)
+@observe(name="researcher-a2a-agent", as_type="span")
+async def call_researcher(base_url: str, payload: dict[str, Any], user_id, session_id) -> dict[str, Any]:
+    with propagate_attributes(
+        user_id=user_id,
+        session_id=session_id,
+        tags=["researcher", "a2a", "homework-12"],
+        metadata={
+            "agent_role": "researcher",
+            "transport": "a2a",
+            "base_url": base_url,
+        },
+    ):
+        return await _call_a2a_agent(base_url, payload, read_timeout=600.0)
 
 
-async def call_validator(base_url: str, payload: dict[str, Any]) -> dict[str, Any]:
-    return await _call_a2a_agent(base_url, payload, read_timeout=600.0)
+@observe(name="validator-a2a-agent", as_type="span")
+async def call_validator(base_url: str, payload: dict[str, Any], user_id, session_id) -> dict[str, Any]:
+    with propagate_attributes(
+        user_id=user_id,
+        session_id=session_id,
+        tags=["validator", "a2a", "homework-12"],
+        metadata={
+            "agent_role": "validator",
+            "transport": "a2a",
+            "base_url": base_url,
+        },
+    ):
+        return await _call_a2a_agent(base_url, payload, read_timeout=600.0)
 
 
-async def call_proof(base_url: str, payload: dict[str, Any]) -> dict[str, Any]:
-    return await _call_a2a_agent(base_url, payload, read_timeout=600.0)
+@observe(name="proof-a2a-agent", as_type="span")
+async def call_proof(base_url: str, payload: dict[str, Any], user_id, session_id) -> dict[str, Any]:
+    with propagate_attributes(
+        user_id=user_id,
+        session_id=session_id,
+        tags=["proof", "a2a", "homework-12"],
+        metadata={
+            "agent_role": "proof",
+            "transport": "a2a",
+            "base_url": base_url,
+        },
+    ):    
+        return await _call_a2a_agent(base_url, payload, read_timeout=600.0)

@@ -5,29 +5,44 @@ from supervisor_agent.graph import build_graph
 from uuid import uuid4
 
 from pathlib import Path
+from langfuse_runtime import observe, propagate_attributes, langchain_config
 
+@observe(name="user-query", as_type="span")
 async def main():
+    print("Course projecet: Property valuation")
+    user_id = "property_valuation"
+    session_id = f"session-{uuid4().hex[:8]}"
+
     graph = build_graph()
 
     thread_id = str(uuid4())
     config = {"configurable": {"thread_id": thread_id}}
 
     external_object_id = str(uuid4())
-    result = await graph.ainvoke(
-        {
-            "external_object_id": external_object_id,
-            # "valuation_description": "1-кімнатна квартира на вул. Андріївська 9, Київ type=flat rooms=1 is_commercial=0",
-            "valuation_description": "1-кімнатна квартира на вул. Анни Ахматової 41, Київ 41 м кв",
-            "target_count": 10
-        },
-        config=config,
-    )
 
-    output_path = Path("output/result.json")
-    with output_path.open("w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2, default=str)
+    with propagate_attributes(
+        user_id=user_id,
+        session_id=session_id,
+        tags=["course_project", "property_valuation", "mas"],
+        metadata={"app": "multi-agent-property-valuation"},
+    ):
+        result = await graph.ainvoke(
+            {
+                "external_object_id": external_object_id,
+                # "valuation_description": "1-кімнатна квартира на вул. Андріївська 9, Київ type=flat rooms=1 is_commercial=0",
+                "valuation_description": "1-кімнатна квартира на вул. Анни Ахматової 41, Київ 41 м кв з сучасним стильним ремнтом",
+                "target_count": 10,
+                "user_id": user_id,
+                "session_id": session_id,
+            },
+            config=config,
+        )
 
-    print(f"Saved result to {output_path.resolve()}")
+        output_path = Path("output/result.json")
+        with output_path.open("w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2, default=str)
+
+        print(f"Saved result to {output_path.resolve()}")
 
     # print(result)
 

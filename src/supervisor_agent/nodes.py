@@ -63,6 +63,8 @@ async def research_and_store_candidates_node(state: AgentState) -> dict[str, Any
             "user_query": state["valuation_description"],
             "thread_id": f"research:{state['valuation_id']}",
         },
+        user_id=state["user_id"],
+        session_id=state["session_id"],
     )
 
     search_url = research.get("search_url")
@@ -154,6 +156,8 @@ async def validate_candidate_node(state: AgentState) -> dict[str, Any]:
             "property_id": candidate.get("property_id"),
             "url": candidate.get("url"),
         },
+        user_id=state["user_id"],
+        session_id=state["session_id"],
     )
 
     async with Client(CONFIG.mongo_store_mcp_url) as client:
@@ -217,6 +221,8 @@ async def _validate_one_candidate(
                 "property_id": candidate.get("property_id"),
                 "url": candidate.get("url"),
             },
+            user_id=state["user_id"],
+            session_id=state["session_id"],
         )
 
         async with Client(CONFIG.mongo_store_mcp_url) as client:
@@ -336,6 +342,8 @@ async def ensure_has_proof_node(state: AgentState) -> dict[str, Any]:
                     "external_proof_path": proof.get("path"),
                     "proof_error": proof.get("error"),
                 },
+                user_id=state["user_id"],
+                session_id=state["session_id"],
             )
 
     return {
