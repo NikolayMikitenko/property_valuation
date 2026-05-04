@@ -332,7 +332,7 @@ async def ensure_has_proof_node(state: AgentState) -> dict[str, Any]:
     items = payload["result"] or []
 
     for item in items:
-        proof = await call_proof(CONFIG.proof_a2a_url, {"url":item["url"],},)
+        proof = await call_proof(CONFIG.proof_a2a_url, {"url":item["url"],}, user_id=state["user_id"], session_id=state["session_id"],)
         async with Client(CONFIG.mongo_store_mcp_url) as client:
             await client.call_tool(
                 "save_candidate_external_proof_result",
@@ -341,9 +341,7 @@ async def ensure_has_proof_node(state: AgentState) -> dict[str, Any]:
                     "item_id": item["item_id"],
                     "external_proof_path": proof.get("path"),
                     "proof_error": proof.get("error"),
-                },
-                user_id=state["user_id"],
-                session_id=state["session_id"],
+                }
             )
 
     return {

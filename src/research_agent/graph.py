@@ -31,6 +31,9 @@ import json
 
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
+from uuid import uuid4
+from langfuse_runtime import observe, propagate_attributes, langchain_config
+
 # def parse_mcp_result(result):
 #     if hasattr(result, "data") and isinstance(result.data, dict):
 #         return result.data
@@ -216,6 +219,7 @@ class ResearchGraphService:
 
         return "detect_asset_kind"
     
+    @observe(name="detect-asset-kind", as_type="span")
     async def detect_asset_kind_node(self, state: AgentState) -> dict[str, Any]:
         llm = self.get_llm(DetectAssetKindResult)
         result = await llm.ainvoke(
@@ -243,6 +247,7 @@ class ResearchGraphService:
             "status": "property_subtype_detected",
         }
 
+    @observe(name="detect-property-type", as_type="span")
     async def detect_property_type_node(self, state: AgentState) -> dict[str, Any]:
         llm = self.get_llm(DetectPropertyTypeResult)
         result = await llm.ainvoke(
@@ -257,6 +262,7 @@ class ResearchGraphService:
             "status": "property_type_detected",
         }
     
+    @observe(name="detect-property-subtype", as_type="span")
     async def detect_property_subtype_node(self, state: AgentState) -> dict[str, Any]:
         llm = self.get_llm(DetectPropertySubtypeResult)
         property_type = state["property_type"]
@@ -285,6 +291,7 @@ class ResearchGraphService:
             "status": "property_subtype_detected",
         }
 
+    @observe(name="create-address", as_type="span")
     async def create_address_node(self, state: AgentState) -> dict[str, Any]:
         llm = self.get_llm()
         result = await llm.ainvoke(
@@ -299,6 +306,7 @@ class ResearchGraphService:
             "status": "address_created",
         }
 
+    @observe(name="detect-domria-object-location", as_type="span")
     async def detect_domria_object_location_node(self, state: AgentState) -> dict[str, Any]:
         async with Client(CONFIG.domria_mcp_url) as client:
             result = await client.call_tool(
@@ -377,6 +385,7 @@ class ResearchGraphService:
 
     #     return list(merged_set), list(truly_new)
 
+    @observe(name="search-domria-candidates", as_type="span")
     async def search_domria_candidates_node(self, state: AgentState) -> dict[str, Any]:
 
         filtered_tools = self.filter_tools_by_name(self.all_mcp_tools, "search_objects")
